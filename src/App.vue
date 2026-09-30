@@ -15,7 +15,19 @@
     -->
     <main class="app-main">
       <section class="panel" aria-labelledby="builder-heading">
-        <h2 id="builder-heading">Builder</h2>
+        <div class="panel-header">
+          <h2 id="builder-heading">Builder</h2>
+          <!--
+            Deliberately not a live region. Autosave fires on every typing
+            pause, so announcing it would interrupt with "Saved at 14:32"
+            every second or so while you work. Sighted users get passive
+            confirmation; a screen reader user can read it on demand.
+          -->
+          <p class="save-status">
+            <time v-if="lastSavedAt" :datetime="lastSavedAt">{{ savedLabel }}</time>
+            <span v-else>{{ savedLabel }}</span>
+          </p>
+        </div>
         <FlipboxBuilder v-model="flipbox" />
       </section>
 
@@ -28,18 +40,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed } from 'vue';
 import FlipboxBuilder from './components/FlipboxBuilder.vue';
 import FlipboxPreview from './components/FlipboxPreview.vue';
-import { createDefaultFlipbox } from './composables/usePersistence.js';
+import { useFlipboxStorage } from './composables/usePersistence.js';
 
 // The single source of truth for the whole app. Both the builder and the
 // preview read this same reactive object, which is what makes the preview
 // update live - there is no syncing step between them.
 //
-// Persistence replaces this initialiser in a later step; for now it just
-// establishes the full shape everything else is built against.
-const flipbox = ref(createDefaultFlipbox());
+// The composable hands it back already restored from storage and keeps it
+// saved, so nothing else in the app has to know persistence exists.
+const { flipbox, lastSavedAt } = useFlipboxStorage();
+
+const savedLabel = computed(() => {
+  if (!lastSavedAt.value) return 'Not saved yet';
+  const time = new Date(lastSavedAt.value).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  return `Saved at ${time}`;
+});
 </script>
 
 <style scoped>
@@ -74,6 +95,25 @@ const flipbox = ref(createDefaultFlipbox());
 
 .panel h2 {
   margin-top: 0;
+}
+
+.panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px; /* replaces the h2's own bottom margin, zeroed below */
+}
+
+.panel-header h2 {
+  margin-bottom: 0;
+}
+
+.save-status {
+  margin: 0 0 0 auto;
+  font-size: 0.85rem;
+  color: #57606a;
 }
 
 @media (max-width: 720px) {
