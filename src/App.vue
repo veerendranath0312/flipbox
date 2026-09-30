@@ -31,15 +31,15 @@
 import { ref } from 'vue';
 import FlipboxBuilder from './components/FlipboxBuilder.vue';
 import FlipboxPreview from './components/FlipboxPreview.vue';
+import { createDefaultFlipbox } from './composables/usePersistence.js';
 
-// TODO: This is a minimal starting shape just so the builder and preview
-// have something to share. Replace or extend it to fit your own data
-// model (e.g. add ids, timestamps, etc.) and wire up persistence as
-// described in the task spec.
-const flipbox = ref({
-  front: '',
-  back: '',
-});
+// The single source of truth for the whole app. Both the builder and the
+// preview read this same reactive object, which is what makes the preview
+// update live - there is no syncing step between them.
+//
+// Persistence replaces this initialiser in a later step; for now it just
+// establishes the full shape everything else is built against.
+const flipbox = ref(createDefaultFlipbox());
 </script>
 
 <style scoped>
