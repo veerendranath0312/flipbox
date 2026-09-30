@@ -40,10 +40,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import FlipboxBuilder from './components/FlipboxBuilder.vue';
-import FlipboxPreview from './components/FlipboxPreview.vue';
-import { useFlipboxStorage } from './composables/usePersistence.js';
+import { computed } from "vue"
+import FlipboxBuilder from "./components/FlipboxBuilder.vue"
+import FlipboxPreview from "./components/FlipboxPreview.vue"
+import { useFlipboxStorage } from "./composables/usePersistence.js"
 
 // The single source of truth for the whole app. Both the builder and the
 // preview read this same reactive object, which is what makes the preview
@@ -51,16 +51,16 @@ import { useFlipboxStorage } from './composables/usePersistence.js';
 //
 // The composable hands it back already restored from storage and keeps it
 // saved, so nothing else in the app has to know persistence exists.
-const { flipbox, lastSavedAt } = useFlipboxStorage();
+const { flipbox, lastSavedAt } = useFlipboxStorage()
 
 const savedLabel = computed(() => {
-  if (!lastSavedAt.value) return 'Not saved yet';
+  if (!lastSavedAt.value) return "Not saved yet"
   const time = new Date(lastSavedAt.value).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  return `Saved at ${time}`;
-});
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+  return `Saved at ${time}`
+})
 </script>
 
 <style scoped>

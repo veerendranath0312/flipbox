@@ -27,9 +27,9 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { Editor, EditorContent } from '@tiptap/vue-3';
-import StarterKit from '@tiptap/starter-kit';
+import { computed, onBeforeUnmount, ref, watch } from "vue"
+import { Editor, EditorContent } from "@tiptap/vue-3"
+import StarterKit from "@tiptap/starter-kit"
 
 const props = defineProps({
   labelledby: { type: String, required: true },
@@ -37,17 +37,17 @@ const props = defineProps({
   // both editors' toolbars would announce as "Text formatting", so a
   // screen reader user listing the page's controls couldn't tell which
   // side they belong to.
-  fieldName: { type: String, default: '' },
+  fieldName: { type: String, default: "" },
   modelValue: {
     type: String,
-    default: '',
+    default: "",
   },
-});
-const emit = defineEmits(['update:modelValue']);
+})
+const emit = defineEmits(["update:modelValue"])
 
 const toolbarLabel = computed(() =>
-  props.fieldName ? `${props.fieldName} text formatting` : 'Text formatting',
-);
+  props.fieldName ? `${props.fieldName} text formatting` : "Text formatting",
+)
 
 // Restricted to exactly what the toolbar exposes. StarterKit otherwise
 // registers headings, blockquote, code, strike, horizontal rule and links,
@@ -74,12 +74,16 @@ const editor = new Editor({
   ],
   content: props.modelValue,
   editorProps: {
-    attributes: { role: 'textbox', 'aria-labelledby': props.labelledby, 'aria-multiline': 'true' },
+    attributes: {
+      role: "textbox",
+      "aria-labelledby": props.labelledby,
+      "aria-multiline": "true",
+    },
   },
   onUpdate: ({ editor: currentEditor }) => {
-    emit('update:modelValue', currentEditor.getHTML());
+    emit("update:modelValue", currentEditor.getHTML())
   },
-});
+})
 
 // Every command is wrapped in .focus() so clicking a toolbar button puts
 // the caret back where it was - otherwise the selection is lost and the
@@ -91,60 +95,60 @@ const editor = new Editor({
 // Undo and redo are actions, so they never get aria-pressed.
 const tools = [
   {
-    id: 'paragraph',
-    type: 'toggle',
-    label: 'Paragraph',
-    title: 'Paragraph',
+    id: "paragraph",
+    type: "toggle",
+    label: "Paragraph",
+    title: "Paragraph",
     run: () => editor.chain().focus().setParagraph().run(),
-    isActive: () => editor.isActive('paragraph'),
+    isActive: () => editor.isActive("paragraph"),
   },
   {
-    id: 'bold',
-    type: 'toggle',
-    label: 'Bold',
-    title: 'Bold (⌘B / Ctrl+B)',
+    id: "bold",
+    type: "toggle",
+    label: "Bold",
+    title: "Bold (⌘B / Ctrl+B)",
     run: () => editor.chain().focus().toggleBold().run(),
-    isActive: () => editor.isActive('bold'),
+    isActive: () => editor.isActive("bold"),
   },
   {
-    id: 'italic',
-    type: 'toggle',
-    label: 'Italic',
-    title: 'Italic (⌘I / Ctrl+I)',
+    id: "italic",
+    type: "toggle",
+    label: "Italic",
+    title: "Italic (⌘I / Ctrl+I)",
     run: () => editor.chain().focus().toggleItalic().run(),
-    isActive: () => editor.isActive('italic'),
+    isActive: () => editor.isActive("italic"),
   },
   {
-    id: 'bulletList',
-    type: 'toggle',
-    label: 'Bulleted list',
-    title: 'Bulleted list',
+    id: "bulletList",
+    type: "toggle",
+    label: "Bulleted list",
+    title: "Bulleted list",
     run: () => editor.chain().focus().toggleBulletList().run(),
-    isActive: () => editor.isActive('bulletList'),
+    isActive: () => editor.isActive("bulletList"),
   },
   {
-    id: 'undo',
-    type: 'action',
-    label: 'Undo',
-    title: 'Undo (⌘Z / Ctrl+Z)',
+    id: "undo",
+    type: "action",
+    label: "Undo",
+    title: "Undo (⌘Z / Ctrl+Z)",
     run: () => editor.chain().focus().undo().run(),
     canRun: () => editor.can().undo(),
   },
   {
-    id: 'redo',
-    type: 'action',
-    label: 'Redo',
-    title: 'Redo (⇧⌘Z / Ctrl+Y)',
+    id: "redo",
+    type: "action",
+    label: "Redo",
+    title: "Redo (⇧⌘Z / Ctrl+Y)",
     run: () => editor.chain().focus().redo().run(),
     canRun: () => editor.can().redo(),
   },
-];
+]
 
 function activate(tool) {
   // aria-disabled (unlike the disabled attribute) does not stop the click,
   // so the guard has to be here.
-  if (tool.type === 'action' && !tool.canRun()) return;
-  tool.run();
+  if (tool.type === "action" && !tool.canRun()) return
+  tool.run()
 }
 
 // --- Roving tabindex ------------------------------------------------------
@@ -152,14 +156,14 @@ function activate(tool) {
 // tab stop with arrow keys moving inside it. Six buttons per editor, two
 // editors, would otherwise be twelve tab stops between the heading and the
 // text you actually came to type.
-const toolbarEl = ref(null);
-const focusedIndex = ref(0);
+const toolbarEl = ref(null)
+const focusedIndex = ref(0)
 
 function focusTool(index) {
   // Wrap around at both ends.
-  const next = (index + tools.length) % tools.length;
-  focusedIndex.value = next;
-  toolbarEl.value?.querySelectorAll('button')[next]?.focus();
+  const next = (index + tools.length) % tools.length
+  focusedIndex.value = next
+  toolbarEl.value?.querySelectorAll("button")[next]?.focus()
 }
 
 function onToolbarKeydown(event) {
@@ -168,30 +172,30 @@ function onToolbarKeydown(event) {
     ArrowLeft: () => focusTool(focusedIndex.value - 1),
     Home: () => focusTool(0),
     End: () => focusTool(tools.length - 1),
-  };
-  const move = moves[event.key];
-  if (!move) return;
-  event.preventDefault(); // stop Home/End scrolling the page
-  move();
+  }
+  const move = moves[event.key]
+  if (!move) return
+  event.preventDefault() // stop Home/End scrolling the page
+  move()
 }
 
 // Keeps the editor in sync if modelValue is changed from outside this
 // component (for example, loaded from storage after a refresh).
 watch(
   () => props.modelValue,
-  value => {
-    const isSame = value === editor.getHTML();
+  (value) => {
+    const isSame = value === editor.getHTML()
     if (!isSame) {
-      editor.commands.setContent(value || '', { emitUpdate: false });
+      editor.commands.setContent(value || "", { emitUpdate: false })
     }
   },
-);
+)
 
 onBeforeUnmount(() => {
-  editor.destroy();
-});
+  editor.destroy()
+})
 
-defineExpose({ editor });
+defineExpose({ editor })
 </script>
 
 <style scoped>

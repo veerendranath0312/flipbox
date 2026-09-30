@@ -6,8 +6,10 @@
       it. aria-live announces the change for anyone who cannot see the flip.
     -->
     <p class="flipbox-status" aria-live="polite">
-      Showing: <strong>{{ showingBack ? 'Back' : 'Front' }}</strong>
-      ({{ showingBack ? 2 : 1 }} of 2)
+      Showing: <strong>{{ showingBack ? "Back" : "Front" }}</strong> ({{
+        showingBack ? 2 : 1
+      }}
+      of 2)
     </p>
 
     <div class="flipbox-viewport">
@@ -54,28 +56,28 @@
       contradiction. One state channel, not two competing ones.
     -->
     <button type="button" class="flipbox-flip" @click="flip">
-      {{ showingBack ? 'Show front' : 'Show back' }}
+      {{ showingBack ? "Show front" : "Show back" }}
     </button>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref } from "vue"
 
 const props = defineProps({
   flipbox: {
     type: Object,
     required: true,
   },
-});
+})
 
 // Which side is showing is transient view state, not part of the saved
 // flipbox - a refresh should start on the front, not restore you mid-flip.
-const side = ref('front');
-const showingBack = computed(() => side.value === 'back');
+const side = ref("front")
+const showingBack = computed(() => side.value === "back")
 
 function flip() {
-  side.value = showingBack.value ? 'front' : 'back';
+  side.value = showingBack.value ? "front" : "back"
 }
 
 // An "empty" editor still emits markup - TipTap normalises no content to
@@ -85,13 +87,13 @@ function flip() {
 // items. Safe against the content being HTML: parseFromString does not
 // execute scripts, and this editor's schema cannot produce any.
 function isEmptyHtml(html) {
-  if (!html) return true;
-  const parsed = new DOMParser().parseFromString(html, 'text/html');
-  return parsed.body.textContent.trim() === '';
+  if (!html) return true
+  const parsed = new DOMParser().parseFromString(html, "text/html")
+  return parsed.body.textContent.trim() === ""
 }
 
-const frontIsEmpty = computed(() => isEmptyHtml(props.flipbox.front));
-const backIsEmpty = computed(() => isEmptyHtml(props.flipbox.back));
+const frontIsEmpty = computed(() => isEmptyHtml(props.flipbox.front))
+const backIsEmpty = computed(() => isEmptyHtml(props.flipbox.back))
 </script>
 
 <style scoped>

@@ -7,17 +7,17 @@
 // save timing all live in one file rather than being spread across
 // components.
 
-import { onScopeDispose, ref, watch } from 'vue';
+import { onScopeDispose, ref, watch } from "vue"
 
 // --- Flipbox data model ---------------------------------------------------
 
-export const STORAGE_KEY = 'flipbox-builder:flipbox';
+export const STORAGE_KEY = "flipbox-builder:flipbox"
 
 // Bumped whenever the persisted shape changes in a way older data can't
 // satisfy. A stored blob outlives the code that wrote it, so on load we
 // check this and fall back to defaults rather than half-loading a shape
 // the current code doesn't understand.
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 1
 
 // A factory, not a shared constant: every caller needs its own object, or
 // they'd all mutate the same one.
@@ -31,9 +31,9 @@ export const SCHEMA_VERSION = 1;
 export function createDefaultFlipbox() {
   return {
     version: SCHEMA_VERSION,
-    front: '',
-    back: '',
-  };
+    front: "",
+    back: "",
+  }
 }
 
 // Guards against anything that isn't a flipbox we can render: a different
@@ -41,11 +41,11 @@ export function createDefaultFlipbox() {
 export function isValidFlipbox(value) {
   return (
     !!value &&
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value.version === SCHEMA_VERSION &&
-    typeof value.front === 'string' &&
-    typeof value.back === 'string'
-  );
+    typeof value.front === "string" &&
+    typeof value.back === "string"
+  )
 }
 
 // --- Saved flipbox state --------------------------------------------------
@@ -55,17 +55,17 @@ export function isValidFlipbox(value) {
 // write itself is cheap; the point is that localStorage is synchronous and
 // sits on the same thread as typing, and that a "Saved" timestamp ticking
 // on every character is noise rather than feedback.
-const SAVE_DEBOUNCE_MS = 500;
+const SAVE_DEBOUNCE_MS = 500
 
 // Reads and validates the stored document, returning both the editable
 // content and when it was last written.
 function readStored() {
-  const stored = loadFromStorage(STORAGE_KEY);
+  const stored = loadFromStorage(STORAGE_KEY)
 
   if (!isValidFlipbox(stored)) {
     // Covers first visit, a bumped schema version, and hand-edited or
     // truncated data. Falling back beats rendering a half-understood shape.
-    return { flipbox: createDefaultFlipbox(), updatedAt: null };
+    return { flipbox: createDefaultFlipbox(), updatedAt: null }
   }
 
   return {
@@ -76,8 +76,8 @@ function readStored() {
       front: stored.front,
       back: stored.back,
     },
-    updatedAt: typeof stored.updatedAt === 'string' ? stored.updatedAt : null,
-  };
+    updatedAt: typeof stored.updatedAt === "string" ? stored.updatedAt : null,
+  }
 }
 
 /**
@@ -89,25 +89,25 @@ function readStored() {
  * empty for a frame and then being reset.
  */
 export function useFlipboxStorage() {
-  const restored = readStored();
-  const flipbox = ref(restored.flipbox);
-  const lastSavedAt = ref(restored.updatedAt);
+  const restored = readStored()
+  const flipbox = ref(restored.flipbox)
+  const lastSavedAt = ref(restored.updatedAt)
 
-  let timer = null;
-  let hasUnsavedChanges = false;
+  let timer = null
+  let hasUnsavedChanges = false
 
   function saveNow() {
     if (timer !== null) {
-      clearTimeout(timer);
-      timer = null;
+      clearTimeout(timer)
+      timer = null
     }
 
-    const updatedAt = new Date().toISOString();
-    const saved = saveToStorage(STORAGE_KEY, { ...flipbox.value, updatedAt });
+    const updatedAt = new Date().toISOString()
+    const saved = saveToStorage(STORAGE_KEY, { ...flipbox.value, updatedAt })
 
     if (saved) {
-      hasUnsavedChanges = false;
-      lastSavedAt.value = updatedAt;
+      hasUnsavedChanges = false
+      lastSavedAt.value = updatedAt
     }
     // On failure (private-mode quota, storage disabled) the helper has
     // already logged it and hasUnsavedChanges stays true, so the next edit
@@ -115,21 +115,21 @@ export function useFlipboxStorage() {
   }
 
   function scheduleSave() {
-    hasUnsavedChanges = true;
-    if (timer !== null) clearTimeout(timer);
-    timer = setTimeout(saveNow, SAVE_DEBOUNCE_MS);
+    hasUnsavedChanges = true
+    if (timer !== null) clearTimeout(timer)
+    timer = setTimeout(saveNow, SAVE_DEBOUNCE_MS)
   }
 
   // Only writes if there is something pending, so leaving the tab alone
   // doesn't churn the timestamp.
   function flush() {
-    if (hasUnsavedChanges) saveNow();
+    if (hasUnsavedChanges) saveNow()
   }
 
   // FlipboxBuilder replaces the whole object on every edit, so a shallow
   // watch would be enough; deep is here so that mutating a field in place
   // later still saves.
-  watch(flipbox, scheduleSave, { deep: true });
+  watch(flipbox, scheduleSave, { deep: true })
 
   // The debounce leaves a window where the newest keystrokes exist only in
   // memory. These close it on the ways a tab actually goes away.
@@ -139,49 +139,49 @@ export function useFlipboxStorage() {
   // visibilitychange + pagehide covers tab switches, app backgrounding and
   // real navigation.
   function onVisibilityChange() {
-    if (document.visibilityState === 'hidden') flush();
+    if (document.visibilityState === "hidden") flush()
   }
 
-  document.addEventListener('visibilitychange', onVisibilityChange);
-  window.addEventListener('pagehide', flush);
+  document.addEventListener("visibilitychange", onVisibilityChange)
+  window.addEventListener("pagehide", flush)
 
   onScopeDispose(() => {
-    document.removeEventListener('visibilitychange', onVisibilityChange);
-    window.removeEventListener('pagehide', flush);
-    flush(); // don't drop a pending edit on teardown
-  });
+    document.removeEventListener("visibilitychange", onVisibilityChange)
+    window.removeEventListener("pagehide", flush)
+    flush() // don't drop a pending edit on teardown
+  })
 
-  return { flipbox, lastSavedAt };
+  return { flipbox, lastSavedAt }
 }
 
 // --- Generic localStorage plumbing ----------------------------------------
 
 export function saveToStorage(key, data) {
   try {
-    localStorage.setItem(key, JSON.stringify(data));
-    return true;
+    localStorage.setItem(key, JSON.stringify(data))
+    return true
   } catch (err) {
-    console.error(`Failed to save "${key}" to localStorage`, err);
-    return false;
+    console.error(`Failed to save "${key}" to localStorage`, err)
+    return false
   }
 }
 
 export function loadFromStorage(key, fallback = null) {
   try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : fallback
   } catch (err) {
-    console.error(`Failed to load "${key}" from localStorage`, err);
-    return fallback;
+    console.error(`Failed to load "${key}" from localStorage`, err)
+    return fallback
   }
 }
 
 export function clearStorage(key) {
   try {
-    localStorage.removeItem(key);
-    return true;
+    localStorage.removeItem(key)
+    return true
   } catch (err) {
-    console.error(`Failed to clear "${key}" from localStorage`, err);
-    return false;
+    console.error(`Failed to clear "${key}" from localStorage`, err)
+    return false
   }
 }
