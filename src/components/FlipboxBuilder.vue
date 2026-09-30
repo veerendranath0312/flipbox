@@ -2,12 +2,20 @@
   <div class="flipbox-builder">
     <div class="field">
       <span :id="frontLabelId" class="field-label">Front</span>
-      <RichTextEditor :labelledby="frontLabelId" field-name="Front" v-model="front" />
+      <RichTextEditor
+        :labelledby="frontLabelId"
+        field-name="Front"
+        v-model="front"
+      />
     </div>
 
     <div class="field">
       <span :id="backLabelId" class="field-label">Back</span>
-      <RichTextEditor :labelledby="backLabelId" field-name="Back" v-model="back" />
+      <RichTextEditor
+        :labelledby="backLabelId"
+        field-name="Back"
+        v-model="back"
+      />
     </div>
     <!--
       TODO: Persistence.
@@ -39,11 +47,13 @@ const backLabelId = useId()
 // updates the editors as well as the preview.
 const front = computed({
   get: () => props.modelValue.front,
-  set: (value) => emit("update:modelValue", { ...props.modelValue, front: value }),
+  set: (value) =>
+    emit("update:modelValue", { ...props.modelValue, front: value }),
 })
 const back = computed({
   get: () => props.modelValue.back,
-  set: (value) => emit("update:modelValue", { ...props.modelValue, back: value }),
+  set: (value) =>
+    emit("update:modelValue", { ...props.modelValue, back: value }),
 })
 </script>
 

@@ -24,7 +24,9 @@
             confirmation; a screen reader user can read it on demand.
           -->
           <p class="save-status">
-            <time v-if="lastSavedAt" :datetime="lastSavedAt">{{ savedLabel }}</time>
+            <time v-if="lastSavedAt" :datetime="lastSavedAt">{{
+              savedLabel
+            }}</time>
             <span v-else>{{ savedLabel }}</span>
           </p>
         </div>
