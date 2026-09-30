@@ -2,12 +2,12 @@
   <div class="flipbox-builder">
     <div class="field">
       <span :id="frontLabelId" class="field-label">Front</span>
-      <RichTextEditor :labelledby="frontLabelId" v-model="front" />
+      <RichTextEditor :labelledby="frontLabelId" field-name="Front" v-model="front" />
     </div>
 
     <div class="field">
       <span :id="backLabelId" class="field-label">Back</span>
-      <RichTextEditor :labelledby="backLabelId" v-model="back" />
+      <RichTextEditor :labelledby="backLabelId" field-name="Back" v-model="back" />
     </div>
     <!--
       TODO: Persistence.

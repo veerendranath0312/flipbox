@@ -36,3 +36,16 @@ button[aria-pressed='true'] {
   background: #dbeafe;
   border-color: #2e74b5;
 }
+
+/* Unavailable toolbar actions use aria-disabled rather than the disabled
+   attribute so they stay focusable: in a toolbar, a control that vanishes
+   from keyboard navigation is harder to understand than one you can reach
+   and hear announced as dimmed. :disabled styling would not match these. */
+button[aria-disabled='true'] {
+  color: #8c959f;
+  cursor: default;
+}
+
+button[aria-disabled='true']:hover {
+  background: #ffffff;
+}
