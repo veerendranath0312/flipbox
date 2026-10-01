@@ -18,9 +18,6 @@ npm install
 npm run dev
 ```
 
-Vite prints a local URL (default <http://localhost:5173>). Open it and the
-builder and preview appear side by side.
-
 Other scripts:
 
 ```bash
@@ -48,7 +45,7 @@ src/
     FlipboxPreview.vue           # flip interaction and side indication
     RichTextEditor.vue           # TipTap editor + formatting toolbar
   composables/
-    usePersistence.js            # flipbox data model, autosave, localStorage
+    usePersistence.js            # debounced autosave, localStorage helpers
 ```
 
 ### Editing
@@ -62,17 +59,18 @@ offer and the preview doesn't style.
 
 Both faces stay in the DOM so the flip can animate between them, but the
 inactive one is `inert` and `aria-hidden`, so only the visible side is
-reachable or readable. The current side is stated three ways: a visible
-status line, a live-region announcement, and the button's own label.
-The animation is suppressed under `prefers-reduced-motion`.
+reachable or readable. The current side is carried by a status line that is
+both visible and announced via `aria-live`, and by the flip button's own
+label — never by the animation alone, which is suppressed under
+`prefers-reduced-motion`.
 
 ### Persistence
 
 `useFlipboxStorage()` returns a ref that is already restored from
 `localStorage` and saves itself, debounced at 500ms, flushing immediately
-when the tab is hidden or unloaded. Stored data is version-checked and
-validated on read, falling back to an empty flipbox rather than rendering
-a shape the code doesn't understand.
+when the tab is hidden or unloaded. Stored data is validated on read,
+falling back to an empty flipbox rather than rendering a shape the code
+doesn't understand.
 
 ## Accessibility notes
 
@@ -80,7 +78,8 @@ a shape the code doesn't understand.
   as `role="toolbar"` requires.
 - Toggle controls use `aria-pressed`; unavailable actions (undo/redo at the
   ends of history) use `aria-disabled` so they stay reachable by keyboard.
-- The editor body has a visible focus ring.
+- Focus is shown on the editor as a whole rather than on the editable area,
+  where an outline reads as a stray input box inside the card.
 - Each toolbar is named for its field ("Front text formatting"), so the two
   editors are distinguishable when listing controls.
 

@@ -33,10 +33,8 @@ import StarterKit from "@tiptap/starter-kit"
 
 const props = defineProps({
   labelledby: { type: String, required: true },
-  // Only used to give each toolbar a distinct accessible name. Without it
-  // both editors' toolbars would announce as "Text formatting", so a
-  // screen reader user listing the page's controls couldn't tell which
-  // side they belong to.
+  // Gives each toolbar a distinct accessible name, so the two editors are
+  // distinguishable when listing the page's controls.
   fieldName: { type: String, default: "" },
   modelValue: {
     type: String,
@@ -49,15 +47,9 @@ const toolbarLabel = computed(() =>
   props.fieldName ? `${props.fieldName} text formatting` : "Text formatting",
 )
 
-// Restricted to exactly what the toolbar exposes. StarterKit otherwise
-// registers headings, blockquote, code, strike, horizontal rule and links,
-// all of which have markdown-style input rules - typing "# " or "> " would
-// silently create content the toolbar never offered and the preview never
-// styles. Disabling them keeps "what you can make" and "what you can see
-// and control" the same set.
-//
-// Kept deliberately: listItem and listKeymap (bulletList depends on them),
-// hardBreak, undoRedo, dropcursor, gapcursor.
+// Restricted to what the toolbar exposes. The disabled extensions all have
+// markdown input rules, so leaving them on would let "# " or "> " create
+// content the toolbar never offered and the preview never styles.
 const editor = new Editor({
   extensions: [
     StarterKit.configure({
@@ -85,14 +77,9 @@ const editor = new Editor({
   },
 })
 
-// Every command is wrapped in .focus() so clicking a toolbar button puts
-// the caret back where it was - otherwise the selection is lost and the
-// formatting appears to apply to nothing.
-//
-// Two kinds of control, which need different semantics:
-//   toggle - a state you are in or out of  -> aria-pressed
-//   action - a thing that happens once     -> aria-disabled when unavailable
-// Undo and redo are actions, so they never get aria-pressed.
+// Toggles get aria-pressed, one-shot actions get aria-disabled. The
+// .focus() in each chain returns the caret to the document, so clicking a
+// button doesn't drop the selection.
 const tools = [
   {
     id: "paragraph",
@@ -145,22 +132,17 @@ const tools = [
 ]
 
 function activate(tool) {
-  // aria-disabled (unlike the disabled attribute) does not stop the click,
-  // so the guard has to be here.
+  // aria-disabled doesn't block the click the way disabled would.
   if (tool.type === "action" && !tool.canRun()) return
   tool.run()
 }
 
-// --- Roving tabindex ------------------------------------------------------
-// role="toolbar" is a promise to the user that the group behaves as one
-// tab stop with arrow keys moving inside it. Six buttons per editor, two
-// editors, would otherwise be twelve tab stops between the heading and the
-// text you actually came to type.
+// Roving tabindex: role="toolbar" means one tab stop for the group, with
+// arrow keys moving between the buttons inside it.
 const toolbarEl = ref(null)
 const focusedIndex = ref(0)
 
 function focusTool(index) {
-  // Wrap around at both ends.
   const next = (index + tools.length) % tools.length
   focusedIndex.value = next
   toolbarEl.value?.querySelectorAll("button")[next]?.focus()
@@ -175,12 +157,12 @@ function onToolbarKeydown(event) {
   }
   const move = moves[event.key]
   if (!move) return
-  event.preventDefault() // stop Home/End scrolling the page
+  event.preventDefault()
   move()
 }
 
-// Keeps the editor in sync if modelValue is changed from outside this
-// component (for example, loaded from storage after a refresh).
+// Syncs the editor when modelValue changes from outside, e.g. restored
+// from storage. The comparison is what stops this looping with onUpdate.
 watch(
   () => props.modelValue,
   (value) => {
@@ -213,7 +195,10 @@ defineExpose({ editor })
   border-bottom: 1px solid #d0d7de;
 }
 
+/* Flex so the editable area fills this box; otherwise it is only as tall
+   as its text and the rest of the box is dead to clicks. */
 .editor-content {
+  display: flex;
   padding: 10px;
   min-height: 120px;
 }
@@ -227,7 +212,9 @@ defineExpose({ editor })
   margin: 0 0 8px;
   padding-left: 24px;
 }
+
 .editor-content :deep(.tiptap) {
+  flex: 1;
   overflow-wrap: anywhere;
 }
 
@@ -235,10 +222,14 @@ defineExpose({ editor })
   white-space: pre-wrap;
 }
 
-/* The editor itself is the focus target, so give it a visible ring - the
-   contenteditable div gets no default outline treatment we can rely on. */
+/* Focus shows on the whole editor rather than the editable area, where an
+   outline reads as a stray input box inside the card. */
 .editor-content :deep(.tiptap:focus-visible) {
-  outline: 2px solid #2e74b5;
-  outline-offset: -2px;
+  outline: none;
+}
+
+.rich-text-editor:focus-within {
+  border-color: #2e74b5;
+  box-shadow: 0 0 0 3px rgba(46, 116, 181, 0.25);
 }
 </style>

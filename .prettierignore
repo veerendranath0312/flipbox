@@ -2,8 +2,5 @@ node_modules
 dist
 package-lock.json
 
-# Markdown here is hand-wrapped at ~76 columns and the tables are padded to
-# read well as plain text. Prettier leaves prose alone by default but does
-# normalise list markers and table padding, so it is excluded. Delete this
-# line to opt the docs in.
+# Markdown is hand-wrapped.
 *.md

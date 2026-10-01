@@ -17,14 +17,6 @@
         v-model="back"
       />
     </div>
-    <!--
-      TODO: Persistence.
-      Save the flipbox so it is still available after the page is
-      refreshed. A generic save/load helper is provided in
-      src/composables/usePersistence.js - decide your own data shape,
-      storage key, and when to save (e.g. on change, debounced, on an
-      explicit action) and load (e.g. on mount).
-    -->
   </div>
 </template>
 

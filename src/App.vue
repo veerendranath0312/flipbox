@@ -3,26 +3,12 @@
     <header class="app-header">
       <h1>Flipbox Builder</h1>
     </header>
-    <!--
-      Starter layout: builder and preview shown side by side, both driven
-      by the same reactive `flipbox` state, so the preview updates live
-      as you edit - no manual save/refresh needed.
-
-      You are free to restructure this (e.g. a toggle between builder and
-      preview "modes" on the same page) as long as the preview still
-      updates live and does not require a separate browser tab or window.
-      See the task spec's "Layout" note under Flipbox component.
-    -->
     <main class="app-main">
       <section class="panel" aria-labelledby="builder-heading">
         <div class="panel-header">
           <h2 id="builder-heading">Builder</h2>
-          <!--
-            Deliberately not a live region. Autosave fires on every typing
-            pause, so announcing it would interrupt with "Saved at 14:32"
-            every second or so while you work. Sighted users get passive
-            confirmation; a screen reader user can read it on demand.
-          -->
+          <!-- Not a live region: autosave fires on every typing pause, so
+               announcing it would interrupt constantly. -->
           <p class="save-status">
             <time v-if="lastSavedAt" :datetime="lastSavedAt">{{
               savedLabel
@@ -47,12 +33,8 @@ import FlipboxBuilder from "./components/FlipboxBuilder.vue"
 import FlipboxPreview from "./components/FlipboxPreview.vue"
 import { useFlipboxStorage } from "./composables/usePersistence.js"
 
-// The single source of truth for the whole app. Both the builder and the
-// preview read this same reactive object, which is what makes the preview
-// update live - there is no syncing step between them.
-//
-// The composable hands it back already restored from storage and keeps it
-// saved, so nothing else in the app has to know persistence exists.
+// Builder and preview share this one object, which is what keeps the
+// preview live without a syncing step.
 const { flipbox, lastSavedAt } = useFlipboxStorage()
 
 const savedLabel = computed(() => {
