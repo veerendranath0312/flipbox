@@ -3,19 +3,19 @@
     <header class="app-header">
       <h1>Flipbox Builder</h1>
     </header>
-    <!--
-      Starter layout: builder and preview shown side by side, both driven
-      by the same reactive `flipbox` state, so the preview updates live
-      as you edit - no manual save/refresh needed.
-
-      You are free to restructure this (e.g. a toggle between builder and
-      preview "modes" on the same page) as long as the preview still
-      updates live and does not require a separate browser tab or window.
-      See the task spec's "Layout" note under Flipbox component.
-    -->
     <main class="app-main">
       <section class="panel" aria-labelledby="builder-heading">
-        <h2 id="builder-heading">Builder</h2>
+        <div class="panel-header">
+          <h2 id="builder-heading">Builder</h2>
+          <!-- Not a live region: autosave fires on every typing pause, so
+               announcing it would interrupt constantly. -->
+          <p class="save-status">
+            <time v-if="lastSavedAt" :datetime="lastSavedAt">{{
+              savedLabel
+            }}</time>
+            <span v-else>{{ savedLabel }}</span>
+          </p>
+        </div>
         <FlipboxBuilder v-model="flipbox" />
       </section>
 
@@ -28,18 +28,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import FlipboxBuilder from './components/FlipboxBuilder.vue';
-import FlipboxPreview from './components/FlipboxPreview.vue';
+import { computed } from "vue"
+import FlipboxBuilder from "./components/FlipboxBuilder.vue"
+import FlipboxPreview from "./components/FlipboxPreview.vue"
+import { useFlipboxStorage } from "./composables/usePersistence.js"
 
-// TODO: This is a minimal starting shape just so the builder and preview
-// have something to share. Replace or extend it to fit your own data
-// model (e.g. add ids, timestamps, etc.) and wire up persistence as
-// described in the task spec.
-const flipbox = ref({
-  front: '',
-  back: '',
-});
+// Builder and preview share this one object, which is what keeps the
+// preview live without a syncing step.
+const { flipbox, lastSavedAt } = useFlipboxStorage()
+
+const savedLabel = computed(() => {
+  if (!lastSavedAt.value) return "Not saved yet"
+  const time = new Date(lastSavedAt.value).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+  return `Saved at ${time}`
+})
 </script>
 
 <style scoped>
@@ -74,6 +79,25 @@ const flipbox = ref({
 
 .panel h2 {
   margin-top: 0;
+}
+
+.panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px; /* replaces the h2's own bottom margin, zeroed below */
+}
+
+.panel-header h2 {
+  margin-bottom: 0;
+}
+
+.save-status {
+  margin: 0 0 0 auto;
+  font-size: 0.85rem;
+  color: #57606a;
 }
 
 @media (max-width: 720px) {

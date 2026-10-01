@@ -1,13 +1,10 @@
-# Flipbox Builder - Starter App
+# Flipbox Builder
 
-This is the starter project for the Flipbox Builder developer task. It gives
-you a running Vue 3 + Vite project with TipTap 3 installed and wired up, a
-generic persistence helper, base styling, and empty component shells marked
-with `TODO` comments where your work should go.
+A builder for a single interactive flipbox: edit rich-text front and back
+content, and see it rendered live as a learner would experience it, with a
+flip that is reachable and understandable without relying on the animation.
 
-Refer to the full task spec for requirements, evaluation priorities, time
-expectations, and submission instructions. This README only covers getting
-the starter running.
+Built on the provided Vue 3 + Vite + TipTap 3 starter.
 
 ## Requirements
 
@@ -21,63 +18,71 @@ npm install
 npm run dev
 ```
 
-Other available scripts:
+Other scripts:
 
 ```bash
 npm run build    # production build
-npm run preview  # preview the production build locally
+npm run preview  # serve the production build locally
 ```
 
-## Dependency baseline
+Use `npm ci` instead of `npm install` for a reproducible install from the
+lockfile.
 
-Updated September 14, 2026 to TipTap 3.31.3, Vue 3.5.42, Vite 8.3.0,
-and @vitejs/plugin-vue 6.0.9. The lockfile records the resolved versions.
-Use `npm ci` for a reproducible install. Follow the TipTap v3 documentation;
-`setContent` takes an options object, including `emitUpdate: false` when
-synchronizing incoming content without emitting another update.
+## How it works
 
-## Project structure
+Everything is driven by one piece of state. `App.vue` owns a single
+reactive `flipbox` object and passes it to both panels — the builder edits
+it, the preview reads it. Because both read the same object, the preview
+updates as you type with no save, refresh or second window involved.
 
 ```tree
 src/
-  App.vue                        # top-level layout (builder + preview)
+  App.vue                        # layout, owns the flipbox state, save status
   main.js
-  style.css
+  style.css                      # base styles, shared button states
   components/
-    FlipboxBuilder.vue           # TODO: front/back editing, persistence
-    FlipboxPreview.vue           # TODO: flip interaction, state communication
-    RichTextEditor.vue           # TipTap wiring; TODO: formatting toolbar
+    FlipboxBuilder.vue           # front/back fields, two-way bound to App
+    FlipboxPreview.vue           # flip interaction and side indication
+    RichTextEditor.vue           # TipTap editor + formatting toolbar
   composables/
-    usePersistence.js            # generic localStorage save/load helper
+    usePersistence.js            # debounced autosave, localStorage helpers
 ```
 
-## What's already set up for you
+### Editing
 
-- A running Vue 3 + Vite project, using the Composition API (`<script setup>`).
-- TipTap wired into `RichTextEditor.vue`, including one working example
-  button (Bold) that shows the command pattern.
-- A generic `localStorage` helper in `usePersistence.js` (save/load/clear).
-- Base styling in `style.css`, including a visible focus style for buttons.
-- `App.vue` renders the builder and preview side by side as a starting
-  layout, both driven by the same reactive state so the preview updates
-  live as you edit.
+`RichTextEditor.vue` wraps TipTap and exposes paragraph, bold, italic,
+bulleted list, undo and redo. The extension set is restricted to exactly
+those, so no markdown shortcut can produce content the toolbar doesn't
+offer and the preview doesn't style.
 
-## What you need to build
+### Preview
 
-Look for `TODO` comments in:
+Both faces stay in the DOM so the flip can animate between them, but the
+inactive one is `inert` and `aria-hidden`, so only the visible side is
+reachable or readable. The current side is carried by a status line that is
+both visible and announced via `aria-live`, and by the flip button's own
+label — never by the animation alone, which is suppressed under
+`prefers-reduced-motion`.
 
-- **`RichTextEditor.vue`** - the formatting toolbar (bold, italic, one list
-  style, undo, redo).
-- **`FlipboxBuilder.vue`** - persistence, and anything else beyond
-  front/back text you choose to add.
-- **`FlipboxPreview.vue`** - the flip interaction itself, and communicating
-  the current side without relying only on the visual animation.
+### Persistence
 
-## Restructuring the starter
+`useFlipboxStorage()` returns a ref that is already restored from
+`localStorage` and saves itself, debounced at 500ms, flushing immediately
+when the tab is hidden or unloaded. Stored data is validated on read,
+falling back to an empty flipbox rather than rendering a shape the code
+doesn't understand.
 
-You're free to restructure components, rename files, add supporting
-packages, or change the layout, as long as the required behavior in the
-task spec is met - including the requirement that the preview update live
-as the flipbox is edited, without a manual save/refresh and without a
-separate browser tab or window. Note any significant changes you make in
-your project summary.
+## Accessibility notes
+
+- The formatting toolbar is a single tab stop with arrow-key navigation,
+  as `role="toolbar"` requires.
+- Toggle controls use `aria-pressed`; unavailable actions (undo/redo at the
+  ends of history) use `aria-disabled` so they stay reachable by keyboard.
+- Focus is shown on the editor as a whole rather than on the editable area,
+  where an outline reads as a stray input box inside the card.
+- Each toolbar is named for its field ("Front text formatting"), so the two
+  editors are distinguishable when listing controls.
+
+One known gap: the "Saved at" indicator is deliberately not a live region,
+because autosave fires on every typing pause and announcing it would
+interrupt constantly. It is readable on demand but not announced.
